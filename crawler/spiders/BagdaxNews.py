@@ -1,27 +1,10 @@
 import scrapy
-import sys
-from scrapy.selector import HtmlXPathSelector
-from scrapy.utils.url import urljoin_rfc
-from scrapy.utils.response import get_base_url
-from scrapy.http import Request
-reload(sys)
 
-'''
-Bagdax新闻爬虫
-
-爬虫内容保存在bagdax.txt
-
-'''
-
-class BagdaxNews(scrapy.Spider):
-
-    sys.setdefaultencoding("utf-8")
+class BagdaxNewsSpider(scrapy.Spider):
     name = "bagdaxnews"
     start_urls = []
     file_name = "bagdaxnews.txt"
-    f_file = open(file_name, 'w')
 
-    # 板块地址及总页数
     urls = {
         "http://world.bagdax.cn/": '340',
         "http://cn.bagdax.cn/": '43',
@@ -36,23 +19,9 @@ class BagdaxNews(scrapy.Spider):
         "http://mixed.bagdax.cn/": '20'
     }
 
-    for key, values in urls.items():
-        start_urls.append(key)
-        if values > 1:
-            for i in range(2, int(values), 2):
-                url = key + str(i) + ".html"
-                start_urls.append(url)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.f_file = open(self.file_name, 'w', encoding='utf-8')
 
-    def parse(self, response):
-        hxs = HtmlXPathSelector(response)
-        titles = hxs.xpath("//ul/li/font/a/@href").extract()
-        for title in titles:
-            print(title)
-            yield Request(title, callback=self.parse_content)
-
-    def parse_content(self, response):
-        hxs = HtmlXPathSelector(response)
-        contents = hxs.xpath("//div[@class = 'content_page']/p/text()").extract()
-        for content in contents:
-            self.f_file.write(content)
-            self.f_file.write("\r\n")
+    def closed(self, reason):
+        self.f_file.close()

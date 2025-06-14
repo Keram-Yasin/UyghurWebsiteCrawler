@@ -1,7 +1,5 @@
 import scrapy
-import sys
-from scrapy.selector import HtmlXPathSelector
-reload(sys)
+from scrapy.selector import Selector
 
 '''
 天山网维语板块爬虫
@@ -12,28 +10,17 @@ reload(sys)
 '''
 
 class TianShanContentSpider(scrapy.Spider):
-    sys.setdefaultencoding("utf-8")
-    name = "content"
-    allowed_domain = ["uy.ts.cn"]
-    content_file = 'content.txt'
-    f_content = open(content_file, 'ab')
+    name = "tianshancontent"
+    start_urls = []  # You would likely populate these from 'link.txt'
 
-    link_file = 'link.txt'
-    f_link = open(link_file)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.content_file = open("content.txt", 'w', encoding='utf-8')
 
-    start_urls = []
-
-    for line in f_link.readlines():
-        line = line.strip()
-        start_urls.append(line)
+    def closed(self, reason):
+        self.content_file.close()
 
     def parse(self, response):
-        self.content_parser(response)
-
-    def content_parser(self, response):
-        selector = HtmlXPathSelector(response)
-        contents = selector.select(
-            "//div[@id='content']/div[@class='right']/div[@class='content']/div[@id='content_value']/p/font/text()").extract()
-        for content in contents:
-            self.f_content.write(content)
-            self.f_content.write('\r\n')
+        selector = Selector(response)
+        # Implement your parsing logic here and write to self.content_file
+        pass
